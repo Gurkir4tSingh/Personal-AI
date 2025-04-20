@@ -10,7 +10,7 @@ function executeSentence() {
       window.open(`https://www.google.com/search?q=${query}`, "_blank");
   
       // Optional: show confirmation in current page
-      output.innerText = `Searching Google for: "${sentence}"`;
+      output.innerText = `Searching for: "${sentence}"`;
     }
   }
   
