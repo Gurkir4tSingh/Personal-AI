@@ -1,8 +1,10 @@
 import discord
-import openai
+import os
+from openai import OpenAI
 
-openai.api_key = "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"
-DISCORD_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.G0B-Qh.PZ9t-jAjwoRLph3Tpz497zecv8rp5Vbnm9n9F8"
+openai_client = OpenAI(api_key="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")
+
+DISCORD_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.GfCm7P._F5ZhSkAiz2zNhREwcGyiGMXdNZHFv1LWo51Dw"  
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -21,12 +23,15 @@ async def on_message(message):
     if client.user.mentioned_in(message):
         user_input = message.content.replace(f"<@{client.user.id}>", "").strip()
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_input}]
-        )
-
-        reply = response["choices"][0]["message"]["content"]
-        await message.channel.send(reply)
+        try:
+            response = openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": user_input}],
+            )
+            reply = response.choices[0].message.content
+            await message.channel.send(reply)
+        except Exception as e:
+            await message.channel.send("⚠️ Error getting response from AI.")
+            print("OpenAI error:", e)
 
 client.run(DISCORD_TOKEN)
