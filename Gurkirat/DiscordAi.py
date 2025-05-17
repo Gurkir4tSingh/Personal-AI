@@ -1,19 +1,39 @@
 import discord
-import os
-from openai import OpenAI
+import requests
+import json
 
-openai_client = OpenAI(api_key="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")
-
-DISCORD_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.GfCm7P._F5ZhSkAiz2zNhREwcGyiGMXdNZHFv1LWo51Dw"  
+DISCORD_BOT_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.GcZOJg.w9IUZ71J6wQfQI9946jhCpBjmrsRPcODnvXYgY"
+OLLAMA_MODEL = "llama2-uncensored"
 
 intents = discord.Intents.default()
 intents.message_content = True
-
 client = discord.Client(intents=intents)
+
+def query_ollama(prompt):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={"model": OLLAMA_MODEL, "prompt": prompt},
+            stream=True
+        )
+
+        full_reply = ""
+        for line in response.iter_lines():
+            if line:
+                try:
+                    data = json.loads(line.decode('utf-8'))
+                    full_reply += data.get("response", "")
+                except json.JSONDecodeError as e:
+                    print("JSON decode error:", e)
+                    print("Offending line:", line.decode('utf-8'))
+
+        return full_reply.strip()
+    except Exception as e:
+        return f"Error contacting model: {str(e)}"
 
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
+    print(f"✅ Logged in as {client.user}")
 
 @client.event
 async def on_message(message):
@@ -21,17 +41,17 @@ async def on_message(message):
         return
 
     if client.user.mentioned_in(message):
-        user_input = message.content.replace(f"<@{client.user.id}>", "").strip()
+        prompt = message.content.replace(f"<@{client.user.id}>", "").strip()
+        if not prompt:
+            await message.channel.send("Ask me something.")
+            return
 
-        try:
-            response = openai_client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": user_input}],
-            )
-            reply = response.choices[0].message.content
+        await message.channel.typing()
+        reply = query_ollama(prompt)
+
+        if reply:
             await message.channel.send(reply)
-        except Exception as e:
-            await message.channel.send("⚠️ Error getting response from AI.")
-            print("OpenAI error:", e)
+        else:
+            await message.channel.send("I didn't get a response.")
 
-client.run(DISCORD_TOKEN)
+client.run(DISCORD_BOT_TOKEN)
