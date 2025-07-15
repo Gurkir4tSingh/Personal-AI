@@ -1,8 +1,8 @@
-import discord
+`import discord
 import requests
 import json
 
-DISCORD_BOT_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.GcZOJg.w9IUZ71J6wQfQI9946jhCpBjmrsRPcODnvXYgY"
+DISCORD_BOT_TOKEN = "discord token"
 OLLAMA_MODEL = "llama2-uncensored"
 
 intents = discord.Intents.default()
@@ -54,4 +54,4 @@ async def on_message(message):
         else:
             await message.channel.send("I didn't get a response.")
 
-client.run(DISCORD_BOT_TOKEN)
+client.run(DISCORD_BOT_TOKEN)`
