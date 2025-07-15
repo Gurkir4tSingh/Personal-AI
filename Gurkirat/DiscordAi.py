@@ -1,4 +1,4 @@
-`import discord
+import discord
 import requests
 import json
 
@@ -54,4 +54,4 @@ async def on_message(message):
         else:
             await message.channel.send("I didn't get a response.")
 
-client.run(DISCORD_BOT_TOKEN)`
+client.run(DISCORD_BOT_TOKEN)
