@@ -4,7 +4,7 @@ import json
 from duckduckgo_search import DDGS
 
 # ===== CONFIG =====
-DISCORD_BOT_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.G5BA9o.n--revASCsiG5FquVUEIwTElhU690Y1GdwHnUo"
+DISCORD_BOT_TOKEN = "discord DISCORD_BOT_TOKEN"
 OLLAMA_MODEL = "mistral:7b"
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
@@ -91,4 +91,4 @@ async def on_message(message):
             await message.channel.send("I didn't get a response.")
 
 # ===== RUN BOT =====
-client.run("MTM3MzE1NjQ2NDE2ODAwOTc4OA.G5BA9o.n--revASCsiG5FquVUEIwTElhU690Y1GdwHnUo")
+client.run("discord token")
