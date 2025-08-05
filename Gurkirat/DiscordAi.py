@@ -1,18 +1,40 @@
 import discord
 import requests
 import json
+from duckduckgo_search import DDGS
 
+# ===== CONFIG =====
 DISCORD_BOT_TOKEN = "MTM3MzE1NjQ2NDE2ODAwOTc4OA.G5BA9o.n--revASCsiG5FquVUEIwTElhU690Y1GdwHnUo"
-OLLAMA_MODEL = "llama2-uncensored:7b"
+OLLAMA_MODEL = "mistral:7b"
+OLLAMA_URL = "http://localhost:11434/api/generate"
 
+# ===== DISCORD BOT SETUP =====
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
+# ===== WEB SEARCH FUNCTION =====
+def web_search(query, max_results=3):
+    """Search DuckDuckGo and return a text summary of results."""
+    try:
+        with DDGS() as ddgs:
+            results = list(ddgs.text(query, max_results=max_results))
+        if not results:
+            return "No relevant search results found."
+
+        summaries = []
+        for r in results:
+            summaries.append(f"{r['title']} - {r['href']}\n{r['body']}")
+        return "\n\n".join(summaries)
+    except Exception as e:
+        return f"Web search error: {str(e)}"
+
+# ===== OLLAMA QUERY FUNCTION =====
 def query_ollama(prompt):
+    """Send a prompt to Ollama's API and return the generated text."""
     try:
         response = requests.post(
-            "http://localhost:11434/api/generate",
+            OLLAMA_URL,
             json={"model": OLLAMA_MODEL, "prompt": prompt},
             stream=True
         )
@@ -31,9 +53,10 @@ def query_ollama(prompt):
     except Exception as e:
         return f"Error contacting model: {str(e)}"
 
+# ===== DISCORD EVENTS =====
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
+    print(f"✅ Logged in as {client.user}")
 
 @client.event
 async def on_message(message):
@@ -47,11 +70,28 @@ async def on_message(message):
             return
 
         await message.channel.typing()
-        reply = query_ollama(prompt)
+
+        # Check if user wants to search the web
+        if prompt.lower().startswith("search from web"):
+            search_query = prompt[len("search from web"):].strip()
+            search_results = web_search(search_query, max_results=3)
+
+            combined_prompt = (
+                f"User question: {search_query}\n\n"
+                f"Here are some real-time web search results:\n{search_results}\n\n"
+                f"Answer the question using the provided search results. "
+                f"If the results are not relevant, answer based on your own knowledge."
+            )
+
+            reply = query_ollama(combined_prompt)
+        else:
+            # Normal mode (no search)
+            reply = query_ollama(prompt)
 
         if reply:
             await message.channel.send(reply)
         else:
             await message.channel.send("I didn't get a response.")
 
+# ===== RUN BOT =====
 client.run("MTM3MzE1NjQ2NDE2ODAwOTc4OA.G5BA9o.n--revASCsiG5FquVUEIwTElhU690Y1GdwHnUo")
