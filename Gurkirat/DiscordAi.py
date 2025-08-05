@@ -77,10 +77,7 @@ async def on_message(message):
             search_results = web_search(search_query, max_results=3)
 
             combined_prompt = (
-                f"User question: {search_query}\n\n"
-                f"Here are some real-time web search results:\n{search_results}\n\n"
-                f"Answer the question using the provided search results. "
-                f"If the results are not relevant, answer based on your own knowledge."
+                
             )
 
             reply = query_ollama(combined_prompt)
